@@ -3,44 +3,59 @@ import time
 import threading
 import pyautogui
 import tkinter as tk
+import sys
 
-hotkey = 'r'
 pyautogui.PAUSE = 0
 
-clicking = False
+running = False
+
+bg = "#70a9a1"
+fg = "#f5f5f5"
+
+win = tk.Tk()
+win.overrideredirect(True)
+win.geometry("400x100+1690+0")
+win.configure(bg = bg)
+win.attributes("-topmost", True)
+label = tk.Label(win, text = "Program Running", font = ("Ariel", 20),fg = fg, bg = bg)
+label.pack(expand=True)
+
+
+
+
 
 def auto_clicker():
     while True:
-        if clicking:
+        if running:
             pyautogui.leftClick()
-        time.sleep(0.001)
+        time.sleep(0.01)
 
-
-def show_message(msg):
-    win = tk.Tk()
-    win.overrideredirect(True)
-    win.geometry("400x100+1800+350")
-    win.attributes("-topmost", True)
-    label = tk.Label(win, text = msg, font=("Ariel",20))
-    label.pack(expand=True,fill="both")
-    win.after(1000,win.destroy)
-    win.mainloop()
+      
+def exit_program():
+    keyboard.wait('esc')
+    win.after(0,win.destroy)
 
         
-def toggle_event(key):
-    global clicking
-    if key.name == hotkey:
-        if clicking:
-            show_message("clicking stopped")
-        else:
-            show_message("clicking started")
-        clicking = not clicking
+def toggle_event():
+    global running,win
+    running = not running
+    if running:
+        win.deiconify()
+    else:
+       win.withdraw()
+        
+        
+
+
 
 click_thread = threading.Thread(target=auto_clicker, daemon=True)
-
 click_thread.start()
 
 
 
-keyboard.on_release(callback=toggle_event)
-keyboard.wait("esc")
+
+keyboard.add_hotkey('r',toggle_event)
+exit_thread = threading.Thread(target = exit_program,daemon = True).start()
+
+
+win.mainloop()
