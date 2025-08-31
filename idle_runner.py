@@ -12,11 +12,14 @@ clicking = False
 bg = "#70a9a1"
 fg = "#f5f5f5"
 
-bonus_stage = 'bonus_stage_indicator.png'   #bonus stage star png
+"bonus stage activation requirements"
+bonus_stage = 'bonus_stage_indicator.png'   
 bonus_stage_location = (1200,250,1400,550)
-bonus_button_l2r = 'bonus_activate_l2r.png'
-bonus_button_r2l = 'bonus_activate_r2l.png'
-bonus_active_location = (1280,1300,1400,600)
+
+"chest hunt activation requirements"
+chest_hunt = 'chest_hunt_indicator.png'
+chest_hunt_location = (480,680,2850,820)
+
 
 win = tk.Tk()
 win.overrideredirect(True)
@@ -27,7 +30,7 @@ win.attributes("-topmost", True)
 label = tk.Label(win, text = "Program Running", font = ("Ariel", 20),fg = fg, bg = bg)
 label.pack(expand=True)
 
-
+conf = 1
 
 def pixel_watcher():
     global clicking
@@ -35,30 +38,70 @@ def pixel_watcher():
         if running:
 
             try: 
-                if pyautogui.locateOnScreen(bonus_stage, region = bonus_stage_location, confidence= 0.8) != None:
+                if pyautogui.locateOnScreen(bonus_stage, region = bonus_stage_location, confidence=0.8) != None:
                     clicking = False
-
-                    if pyautogui.locateOnScreen(bonus_button_l2r, region = bonus_active_location, confidence= 0.5) != None:
-                        button_location = pyautogui.center(pyautogui.locateOnScreen(bonus_button_l2r, region = bonus_active_location, confidence= 0.5))
-                        pyautogui.moveTo(button_location)
-                        end_location = (button_location[0]+1150,button_location[1])
-                        pyautogui.mouseDown()
-                        pyautogui.moveTo(end_location,duration = 1)
-                        pyautogui.mouseUp()
-                        bonus_stage_player()
-
-                    
-                    elif pyautogui.locateOnScreen(bonus_button_r2l, region = bonus_active_location, confidence= 0.5) != None:
-                        button_location = pyautogui.center(pyautogui.locateOnScreen(bonus_button_r2l, region = bonus_active_location, confidence= 0.5))
-                        pyautogui.moveTo(button_location)
-                        end_location = (button_location[0]-1150,button_location[1])
-                        pyautogui.mouseDown()
-                        pyautogui.moveTo(end_location,duration = 1)
-                        pyautogui.mouseUp()
-                        bonus_stage_player()
+                    not_started = True
+                    while not_started:
+                        print("balls")
+                        if pyautogui.pixel(1307,1694)[0] == 0 or pyautogui.pixel(1307,1522)[0] == 0:
+                            print("r2l")
+                            not_started = False
+                            if pyautogui.pixel(1307,1522)[0] == 0:
+                                y = 1530
+                            else:
+                                y = 1700
+                            button_location = (2470,y)
+                            pyautogui.moveTo(button_location)
+                            time.sleep(1)
+                            end_location = (button_location[0]-1150,button_location[1])
+                            pyautogui.mouseDown()
+                            pyautogui.moveTo(end_location,duration = 1)
+                            pyautogui.mouseUp()
+                            bonus_stage_player()
+                        
+                        elif pyautogui.pixel(2527,1694)[0] == 0 or pyautogui.pixel(2527,1526)[0] == 0:
+                            print("l2r")
+                            not_started = False
+                            if pyautogui.pixel(2527,1522)[0] == 0:
+                                y = 1530
+                            else:
+                                y = 1700
+                            button_location = (1370,y)
+                            pyautogui.moveTo(button_location)
+                            time.sleep(1)
+                            end_location = (button_location[0]+1150,button_location[1])
+                            pyautogui.mouseDown()
+                            pyautogui.moveTo(end_location,duration = 1)
+                            pyautogui.mouseUp()
+                            bonus_stage_player()
+                        
+                
 
             except pyautogui.ImageNotFoundException:
-                pass
+                try: 
+                    if pyautogui.locateOnScreen(chest_hunt, region = chest_hunt_location, confidence= 0.8) != None :
+                        clicking = False
+                        chest_hunt_ended = False
+                        time.sleep(4)
+                        pyautogui.click(3240,800)
+                        time.sleep(3)
+                        pyautogui.click(3240,1400)
+                        time.sleep(3)
+                        for i in range(1400,700,-300):
+                            for j in range(630,3500,290):
+                                if pyautogui.pixel(1900,1930)[1] == 175:
+                                    chest_hunt_ended = True
+                                    break
+                                pyautogui.click(j,i)
+                                time.sleep(3)
+                            if chest_hunt_ended:
+                                break
+                        pyautogui.click(1900,1970)
+                        time.sleep(3)
+
+                        clicking = True
+                except:
+                    pass
             
             time.sleep(0.1)
         time.sleep(0.1)
@@ -79,8 +122,10 @@ def auto_clicker():
 def bonus_stage_player():
     global clicking
     time.sleep(40)
-    pyautogui.click(2150,1650)
-    clicking = True
+    if running:
+        pyautogui.click(2150,1650)
+        time.sleep(6)
+        clicking = True
 
 
 
@@ -119,29 +164,3 @@ exit_thread = threading.Thread(target = exit_program,daemon = True).start()
 
 
 win.mainloop()
-"""
-
-# pixel finder!!
-import tkinter as tk
-import pyautogui
-
-def update_position():
-    x, y = pyautogui.position()  # Get current mouse position
-    color = pyautogui.pixel(x,y)
-    label.config(text=f"X: {x}  Y: {y}, color:{color}")
-    
-    # Move the window slightly offset from the mouse so it doesn't overlap
-    root.geometry(f"+{x + 20}+{y + 20}")
-    
-    # Schedule the function to run again after 50ms
-    root.after(50, update_position)
-
-root = tk.Tk()
-root.overrideredirect(True)  # Remove window decorations
-root.attributes('-topmost', True)  # Keep window on top
-
-label = tk.Label(root, text="", font=("Arial", 10), bg="yellow")
-label.pack()
-
-update_position()  # Start the update loop
-root.mainloop()"""
