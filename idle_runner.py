@@ -3,11 +3,16 @@ import time
 import threading
 import pyautogui
 import tkinter as tk
+import numpy as np
 
 pyautogui.PAUSE = 0
 
 running = False
 clicking = False
+
+hot_keys = ['f6','f6+space','f6+f7','f6+f5']
+
+mouse_pos = (3840,1450)
 
 bg = "#70a9a1"
 fg = "#f5f5f5"
@@ -15,10 +20,16 @@ fg = "#f5f5f5"
 "bonus stage activation requirements"
 bonus_stage = 'bonus_stage_indicator.png'   
 bonus_stage_location = (1200,250,1400,550)
+bonus_stage_count = 0
+
 
 "chest hunt activation requirements"
 chest_hunt = 'chest_hunt_indicator.png'
-chest_hunt_location = (480,680,2850,820)
+saver = 'chest_hunt_saver.png'
+perfect_chest = 'perfect_chest_hunt_indicator.png'
+chest_hunt_location = (380,600,3020,950)
+chest_hunt_count = 0
+perfect_chest_hunt_count = 0
 
 
 win = tk.Tk()
@@ -33,75 +44,115 @@ label.pack(expand=True)
 conf = 1
 
 def pixel_watcher():
-    global clicking
+    global clicking,bonus_stage_count,chest_hunt_count,perfect_chest_hunt_count
     while True:
         if running:
 
             try: 
                 if pyautogui.locateOnScreen(bonus_stage, region = bonus_stage_location, confidence=0.8) != None:
                     clicking = False
-                    not_started = True
-                    while not_started:
-                        print("balls")
-                        if pyautogui.pixel(1307,1694)[0] == 0 or pyautogui.pixel(1307,1522)[0] == 0:
-                            print("r2l")
-                            not_started = False
-                            if pyautogui.pixel(1307,1522)[0] == 0:
-                                y = 1530
-                            else:
-                                y = 1700
-                            button_location = (2470,y)
-                            pyautogui.moveTo(button_location)
-                            time.sleep(1)
-                            end_location = (button_location[0]-1150,button_location[1])
-                            pyautogui.mouseDown()
-                            pyautogui.moveTo(end_location,duration = 1)
-                            pyautogui.mouseUp()
-                            bonus_stage_player()
-                        
-                        elif pyautogui.pixel(2527,1694)[0] == 0 or pyautogui.pixel(2527,1526)[0] == 0:
-                            print("l2r")
-                            not_started = False
-                            if pyautogui.pixel(2527,1522)[0] == 0:
-                                y = 1530
-                            else:
-                                y = 1700
-                            button_location = (1370,y)
-                            pyautogui.moveTo(button_location)
-                            time.sleep(1)
-                            end_location = (button_location[0]+1150,button_location[1])
-                            pyautogui.mouseDown()
-                            pyautogui.moveTo(end_location,duration = 1)
-                            pyautogui.mouseUp()
-                            bonus_stage_player()
-                        
+                    print("bonus stage")
+                    bonus_stage_count+=1
+
+                    if pyautogui.pixel(1307,1694)[0] == 0 or pyautogui.pixel(1307,1522)[0] == 0:
+                        if pyautogui.pixel(1307,1522)[0] == 0:
+                            y = 1530
+                        else:
+                            y = 1700
+                        button_location = (2470,y)
+                        pyautogui.moveTo(button_location)
+                        time.sleep(1)
+                        end_location = (button_location[0]-1150,button_location[1])
+                        pyautogui.mouseDown()
+                        pyautogui.moveTo(end_location,duration = 1)
+                        pyautogui.mouseUp()
+                        bonus_stage_player()
+                    
+                    elif pyautogui.pixel(2527,1694)[0] == 0 or pyautogui.pixel(2527,1526)[0] == 0:
+                        if pyautogui.pixel(2527,1522)[0] == 0:
+                            y = 1530
+                        else:
+                            y = 1700
+                        button_location = (1370,y)
+                        pyautogui.moveTo(button_location)
+                        time.sleep(1)
+                        end_location = (button_location[0]+1150,button_location[1])
+                        pyautogui.mouseDown()
+                        pyautogui.moveTo(end_location,duration = 1)
+                        pyautogui.mouseUp()
+                        bonus_stage_player()
+                    
                 
 
             except pyautogui.ImageNotFoundException:
-                try: 
-                    if pyautogui.locateOnScreen(chest_hunt, region = chest_hunt_location, confidence= 0.8) != None :
-                        clicking = False
-                        chest_hunt_ended = False
-                        time.sleep(4)
-                        pyautogui.click(3240,800)
-                        time.sleep(3)
-                        pyautogui.click(3240,1400)
-                        time.sleep(3)
-                        for i in range(1400,700,-300):
-                            for j in range(630,3500,290):
-                                if pyautogui.pixel(1900,1930)[1] == 175:
-                                    chest_hunt_ended = True
-                                    break
-                                pyautogui.click(j,i)
+                pass
+            try: 
+                if pyautogui.locateOnScreen(chest_hunt, region = chest_hunt_location, confidence= 0.8) != None :
+                    clicking = False
+                    print("chest hunt")
+                    chest_hunt_count+=1
+                    x2_found = False
+                    perfect_chest_hunt = False
+
+                    time.sleep(4)
+                    if running:
+                        pyautogui.mouseDown(500,970)
+                        pyautogui.moveTo(500,1800,duration=1)
+                        pyautogui.mouseUp(500,1800)
+                    time.sleep(3)
+
+                    chests = pyautogui.locateAllOnScreen(chest_hunt, region = chest_hunt_location, confidence= 0.99) 
+                    chests_locations = [] 
+                    for chest in chests: 
+                        chests_locations.append((int(pyautogui.center(chest).x),int(pyautogui.center(chest).y)))
+                    chests_locations.sort(key=lambda k: (-k[1], k[0]))
+
+                    saver_np = pyautogui.locateCenterOnScreen(saver, region = chest_hunt_location, confidence= 0.99)
+                    saver_location = (int(saver_np.x),int(saver_np.y))
+
+                    if running:
+                        if (3202, 821) in chests_locations:
+                            pyautogui.click(3202, 821)
+                            time.sleep(3)
+                            if pyautogui.pixel(2070,1975) == (106,190,48):
+                                x2_found = True
+                                pyautogui.click(saver_location)
                                 time.sleep(3)
-                            if chest_hunt_ended:
+
+                    if running and not x2_found:
+                        pyautogui.click(3202, 1391)
+                        time.sleep(3)
+
+                    for (chest_x,chest_y) in chests_locations:
+                        area = np.array(pyautogui.screenshot(region=(2000,900,650,600)))
+                        matches = np.all(area == (148,53,167), axis = -1)
+                        if np.any(matches):
+                            perfect_chest_hunt = True
+                            perfect_chest_hunt_count+=1
+                            time.sleep(6)
+                            break
+                        if pyautogui.pixel(1900,1930)[0] == 175 and running:
                                 break
+                        if pyautogui.pixel(1900,1976) == (106,190,48) and not x2_found:
+                                x2_found = True
+                                pyautogui.click(saver_location)
+                                time.sleep(3)
+                        if (chest_x,chest_y) in chests_locations and running:
+                            pyautogui.click(chest_x,chest_y)
+                            time.sleep(3)
+
+                    if perfect_chest_hunt and running:
+                        pyautogui.click(2370,1230)
+                        time.sleep(6)
+                        print("perfect!!!")
+                    
+                    if running:
                         pyautogui.click(1900,1970)
                         time.sleep(3)
 
                         clicking = True
-                except:
-                    pass
+            except pyautogui.ImageNotFoundException:
+                pass
             
             time.sleep(0.1)
         time.sleep(0.1)
@@ -109,13 +160,12 @@ def pixel_watcher():
 
 
 
-
 def auto_clicker():
     while True:
         if clicking:
-            pyautogui.leftClick(3840,1475)
-            pyautogui.rightClick(3840,1475)
-        time.sleep(0.01)
+            pyautogui.leftClick(mouse_pos)
+            pyautogui.rightClick(mouse_pos)
+        time.sleep(0.005)
 
       
 
@@ -132,6 +182,7 @@ def bonus_stage_player():
 
 def exit_program():
     keyboard.wait('esc')
+    print(f"bonus stages: {bonus_stage_count}, chest hunts: {chest_hunt_count}, perfect chest hunts: {perfect_chest_hunt_count}")
     win.after(0,win.destroy)
 
         
@@ -154,8 +205,6 @@ interference_thread = threading.Thread(target = pixel_watcher,daemon=True)
 interference_thread.start()
 click_thread.start()
 
-
-hot_keys = ['f6','f6+space','f6+f7','f6+f5']
 
 for key in hot_keys:
     keyboard.add_hotkey(key,toggle_event)
