@@ -3,7 +3,6 @@ import time
 import threading
 import pyautogui
 import tkinter as tk
-import numpy as np
 
 pyautogui.PAUSE = 0
 
@@ -26,7 +25,7 @@ bonus_stage_count = 0
 "chest hunt activation requirements"
 chest_hunt = 'chest_hunt_indicator.png'
 saver = 'chest_hunt_saver.png'
-perfect_chest = 'perfect_chest_hunt_indicator.png'
+perfect_chest = 'perfect_chest.png'
 chest_hunt_location = (380,600,3020,950)
 chest_hunt_count = 0
 perfect_chest_hunt_count = 0
@@ -41,7 +40,6 @@ win.attributes("-topmost", True)
 label = tk.Label(win, text = "Program Running", font = ("Ariel", 20),fg = fg, bg = bg)
 label.pack(expand=True)
 
-conf = 1
 
 def pixel_watcher():
     global clicking,bonus_stage_count,chest_hunt_count,perfect_chest_hunt_count
@@ -114,23 +112,25 @@ def pixel_watcher():
                         if (3202, 821) in chests_locations:
                             pyautogui.click(3202, 821)
                             time.sleep(3)
-                            if pyautogui.pixel(2070,1975) == (106,190,48):
+                            if pyautogui.pixel(2050,1970) == (106,190,48):
                                 x2_found = True
                                 pyautogui.click(saver_location)
                                 time.sleep(3)
 
-                    if running and not x2_found:
+                    if running and not x2_found and (3202, 1391) in chests_locations:
                         pyautogui.click(3202, 1391)
                         time.sleep(3)
 
                     for (chest_x,chest_y) in chests_locations:
-                        area = np.array(pyautogui.screenshot(region=(2000,900,650,600)))
-                        matches = np.all(area == (148,53,167), axis = -1)
-                        if np.any(matches):
-                            perfect_chest_hunt = True
-                            perfect_chest_hunt_count+=1
-                            time.sleep(6)
-                            break
+                            
+                        try:
+                            if pyautogui.locateOnScreen(perfect_chest,region = chest_hunt_location,confidence=0.9):
+                                perfect_chest_hunt = True
+                                perfect_chest_hunt_count+=1
+                                break
+                        except pyautogui.ImageNotFoundException:
+                            pass
+                        
                         if pyautogui.pixel(1900,1930)[0] == 175 and running:
                                 break
                         if pyautogui.pixel(1900,1976) == (106,190,48) and not x2_found:
@@ -140,19 +140,31 @@ def pixel_watcher():
                         if (chest_x,chest_y) in chests_locations and running:
                             pyautogui.click(chest_x,chest_y)
                             time.sleep(3)
+                    else:
+                        if running:
+                            time.sleep(10)
+                            try:
+                                if pyautogui.locateOnScreen(perfect_chest,region = chest_hunt_location,confidence=0.9):
+                                    perfect_chest_hunt = True
+                                    perfect_chest_hunt_count+=1
+                            except pyautogui.ImageNotFoundException:
+                                pass
+
 
                     if perfect_chest_hunt and running:
+
                         pyautogui.click(2370,1230)
-                        time.sleep(6)
+                        time.sleep(12)
                         print("perfect!!!")
                     
                     if running:
                         pyautogui.click(1900,1970)
                         time.sleep(3)
-
-                        clicking = True
+                        if running:
+                            clicking = True
             except pyautogui.ImageNotFoundException:
                 pass
+
             
             time.sleep(0.1)
         time.sleep(0.1)
@@ -165,7 +177,7 @@ def auto_clicker():
         if clicking:
             pyautogui.leftClick(mouse_pos)
             pyautogui.rightClick(mouse_pos)
-        time.sleep(0.005)
+        time.sleep(0.001)
 
       
 
@@ -200,7 +212,7 @@ def toggle_event():
 
 
 click_thread = threading.Thread(target=auto_clicker, daemon=True)
-interference_thread = threading.Thread(target = pixel_watcher,daemon=True)
+interference_thread = threading.Thread(target=pixel_watcher,daemon=True)
 
 interference_thread.start()
 click_thread.start()
