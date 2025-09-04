@@ -3,11 +3,37 @@ import time
 import threading
 import pyautogui
 import tkinter as tk
+import os
+from dotenv import find_dotenv, load_dotenv
+from email.message import EmailMessage
+import ssl
+import smtplib
+from email.utils import make_msgid
+import mimetypes
+
+dotenv_path = find_dotenv()
+load_dotenv(dotenv_path)
+
+email = os.getenv("EMAIL")
+email_password = os.getenv("PASSWORD")
+
+
+em = EmailMessage()
+em['FROM']  = email
+em['TO']  = email
+
+image_cid = make_msgid()
+
+context = ssl.create_default_context()
+
+
 
 pyautogui.PAUSE = 0
 
 running = False
 clicking = False
+email_alerts = True # controls email alerts
+
 
 hot_keys = ['f6','f6+space','f6+f7','f6+f5']
 
@@ -155,6 +181,39 @@ def pixel_watcher():
 
                         pyautogui.click(2370,1230)
                         time.sleep(12)
+
+
+                        if email_alerts:
+                            pyautogui.screenshot('after_perfect.png')
+                            em['subject']  = "perfect alert"
+                            em.set_content('you just got a perfect chest hunt!!!')
+                            em.add_alternative("""\
+                            <html>
+                                <body>
+                                    <p><br>
+                                    </p>
+                                    <img src="cid:{image_cid}">
+                                </body>
+                            </html>
+                            """.format(image_cid=image_cid[1:-1]), subtype='html')
+
+                            with open('after_Perfect.png','rb') as img:
+                                    # know the Content-Type of the image
+                                    maintype, subtype = mimetypes.guess_type(img.name)[0].split('/')
+
+                                    # attach it
+                                    em.get_payload()[1].add_related(img.read(), 
+                                                                        maintype=maintype, 
+                                                                        subtype=subtype, 
+                                                                        cid=image_cid)
+
+
+
+                            with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+                                smtp.login(email,email_password)
+                                smtp.sendmail(email,email,em.as_string())
+
+
                         print("perfect!!!")
                     
                     if running:
