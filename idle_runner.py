@@ -193,7 +193,7 @@ def chest_hunt_player():
         if (3202, 821) in chests_locations:
             pyautogui.click(3202, 821)
             time.sleep(3)
-            if pyautogui.pixel(2050,1970) == (106,190,48):
+            if pyautogui.pixel(2050,1970) == (106,190,48) and program_running:
                 x2_found = True
                 pyautogui.click(saver_location)
                 time.sleep(3)
@@ -214,7 +214,7 @@ def chest_hunt_player():
         
         if pyautogui.pixel(1900,1930)[0] == 175 and program_running:
                 break
-        if pyautogui.pixel(1900,1976) == (106,190,48) and not x2_found:
+        if pyautogui.pixel(1900,1976) == (106,190,48) and not x2_found and program_running:
                 x2_found = True
                 pyautogui.click(saver_location)
                 time.sleep(3)
@@ -244,7 +244,7 @@ def chest_hunt_player():
             em['TO']  = email
             pyautogui.screenshot('after_perfect.png')
             em['subject']  = "perfect alert"
-            em.set_content(f"random boxes: {random_box_count}, bonus stages: {bonus_stage_count}, chest hunts: {chest_hunt_count}, perfect chest hunts: {perfect_chest_hunt_count}")
+            em.set_content(f"boxes: {random_box_count}, stages: {bonus_stage_count}, hunts: {chest_hunt_count}, perfects: {perfect_chest_hunt_count}")
             em.add_alternative("""\
             <html>
                 <body>
